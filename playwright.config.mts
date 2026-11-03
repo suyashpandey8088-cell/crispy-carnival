@@ -3,8 +3,9 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: false,
+  expect: { timeout: 15000 },
   workers: 1,
-  timeout: 45000,
+  timeout: 90000,
   use: {
     baseURL: "http://localhost:3000",
     launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH

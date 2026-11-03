@@ -1,4 +1,5 @@
-import Portfolio from "@/components/portfolio";
+import CinematicExperience from "@/components/cinematic/experience";
+import "./cinematic.css";
 export default function Home() {
-  return <Portfolio />;
+  return <CinematicExperience />;
 }

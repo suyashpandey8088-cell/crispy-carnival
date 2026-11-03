@@ -1,151 +1,308 @@
-import { test, expect } from "@playwright/test";
-
-test.beforeEach(async ({ page }, testInfo) => {
-  if (testInfo.title.startsWith("the opening")) return;
-  await page.addInitScript(() =>
-    sessionStorage.setItem("exhibition-entered", "true"),
+import { test, expect, type Page } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+const ids = [
+  "awakening",
+  "hero",
+  "about",
+  "experience",
+  "work",
+  "skills",
+  "beyond",
+  "contact",
+];
+async function scrub(page: Page, id: string, progress: number) {
+  const target = await page.locator(`#${id}`).evaluate((el, p) => {
+    const root = el as HTMLElement;
+    return (
+      Number(root.dataset.scrollStart) +
+      (Number(root.dataset.scrollEnd) - Number(root.dataset.scrollStart)) * p
+    );
+  }, progress);
+  await page.evaluate(
+    (y) => window.scrollTo({ top: y, behavior: "instant" }),
+    target,
   );
-});
-test("all exhibition chapters and project archive are navigable", async ({
+  await expect
+    .poll(async () =>
+      Number(await page.locator(`#${id}`).getAttribute("data-progress")),
+    )
+    .toBeCloseTo(progress, 2);
+}
+async function ready(page: Page) {
+  await page.goto("/");
+  await expect(page.locator(".cinematic-experience")).toHaveAttribute(
+    "data-motion",
+    /full|reduced/,
+  );
+  await expect(page.locator(".cinematic-experience")).toHaveAttribute(
+    "data-ready",
+    "true",
+  );
+}
+test("all eight pinned timelines scrub, reverse, and release without blank gaps", async ({
   page,
-}) => {
+}, info) => {
+  test.skip(
+    info.project.name === "reduced-motion",
+    "Reduced motion intentionally has no pins.",
+  );
+  test.setTimeout(90000);
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Engineering",
-  );
-  for (const id of [
-    "about",
-    "work",
-    "experience",
-    "skills",
-    "beyond",
-    "contact",
-  ])
-    await expect(page.locator(`#${id}`)).toHaveCount(1);
-  await page.getByRole("button", { name: "View all explorations" }).click();
-  await expect(page.locator(".project-card")).toHaveCount(5);
-  await page.locator(".project-card").first().click();
-  await expect(page).toHaveURL(/projects\/ai-code-review/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "A second set of eyes.",
-  );
-  await expect(page.getByText("Source link pending")).toBeVisible();
-  await page.getByRole("link", { name: "Back to the explorations" }).click();
-  await expect(page).toHaveURL(/#work/);
+  await ready(page);
+  await expect(page.locator(".pin-spacer")).toHaveCount(8);
+  for (const id of ids) {
+    await scrub(page, id, 0.35);
+    const top = await page
+      .locator(`#${id}`)
+      .evaluate((e) => e.getBoundingClientRect().top);
+    expect(Math.abs(top)).toBeLessThan(2);
+    await expect(page.locator(`#${id}`)).not.toHaveAttribute("inert");
+    await scrub(page, id, 0.7);
+    const start = Number(
+      await page.locator(`#${id}`).getAttribute("data-scroll-start"),
+    );
+    const end = Number(
+      await page.locator(`#${id}`).getAttribute("data-scroll-end"),
+    );
+    expect(end - start).toBeGreaterThan(500);
+    // During the one-viewport natural hand-off the next frame touches the previous frame.
+    const i = ids.indexOf(id);
+    if (i < ids.length - 1) {
+      await page.evaluate(
+        (y) => window.scrollTo({ top: y + 100, behavior: "instant" }),
+        end,
+      );
+      await expect
+        .poll(async () =>
+          Math.abs(
+            await page.evaluate(
+              ([a, b]) =>
+                document.getElementById(b)!.getBoundingClientRect().top -
+                document.getElementById(a)!.getBoundingClientRect().bottom,
+              [id, ids[i + 1]],
+            ),
+          ),
+        )
+        .toBeLessThan(3);
+    }
+  }
+  await scrub(page, "hero", 0.2);
+  await expect(page.locator(".hud-chapter")).toContainText("POSSIBILITY");
   expect(errors).toEqual([]);
 });
-test("experience accordion, skill details and contact dialog work", async ({
+test("horizontal journey and project replacement expose each entry", async ({
   page,
-}) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: /04.*Web Developer Intern/ }).click();
-  await expect(page.locator("#experience-3")).toBeVisible();
-  await page.getByRole("button", { name: "Python", exact: false }).click();
-  await expect(page.locator(".skill-description")).toContainText(
-    "A language for turning ideas",
-  );
-  await page.getByRole("button", { name: "Start a conversation" }).click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.getByRole("dialog")).toContainText("not been verified");
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).not.toBeVisible();
+}, info) => {
+  test.skip(info.project.name === "reduced-motion");
+  await ready(page);
+  const positions: number[] = [];
+  for (let i = 0; i < 5; i++) {
+    const progress = Math.max(0.005, Math.min(0.995, i / 4));
+    await scrub(page, "experience", progress);
+    await expect(page.locator("#experience")).toHaveAttribute(
+      "data-active-panel",
+      String(i),
+    );
+    const panel = page.locator(".journey-panel").nth(i);
+    await expect(panel).not.toHaveAttribute("inert");
+    positions.push(
+      await page
+        .locator(".journey-track")
+        .evaluate((e) => new DOMMatrix(getComputedStyle(e).transform).m41),
+    );
+    await scrub(page, "work", progress);
+    await expect(page.locator("#work")).toHaveAttribute(
+      "data-active-panel",
+      String(i),
+    );
+    await expect(page.locator(".work-panel").nth(i)).toHaveCSS(
+      "visibility",
+      "visible",
+    );
+    await expect(
+      page
+        .locator(".work-panel")
+        .nth(i)
+        .getByRole("link", { name: "Explore the idea" }),
+    ).toBeVisible();
+  }
+  expect(positions[4]).toBeLessThan(positions[0] - 1000);
 });
-test("no horizontal overflow and usable navigation on small screens", async ({
+test("chapter navigation, deep links, refresh, and browser back remain natural", async ({
   page,
-}) => {
-  await page.goto("/");
+}, info) => {
+  await page.goto("/#experience");
+  await expect(page.locator(".cinematic-experience")).toHaveAttribute(
+    "data-motion",
+    /full|reduced/,
+  );
+  await expect(page.locator(".cinematic-experience")).toHaveAttribute(
+    "data-ready",
+    "true",
+  );
+  if (info.project.name !== "reduced-motion") {
+    await expect(page.locator(".hud-chapter")).toContainText("JOURNEY");
+    await expect
+      .poll(async () =>
+        Number(await page.locator("#experience").getAttribute("data-progress")),
+      )
+      .toBeLessThan(0.05);
+    await page.getByRole("link", { name: "Chapter 5: Selected work" }).click();
+    await expect(page).toHaveURL(/#work/);
+    await expect(page.locator(".hud-chapter")).toContainText("SELECTED WORK");
+    await page.reload();
+    await expect(page.locator(".hud-chapter")).toContainText("SELECTED WORK");
+    await page.goBack();
+    await expect(page).toHaveURL(/#experience/);
+    await expect(page.locator(".hud-chapter")).toContainText("JOURNEY");
+  }
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBeTruthy();
-  if (await page.getByRole("button", { name: "Open navigation" }).isVisible()) {
-    await page.getByRole("button", { name: "Open navigation" }).click();
-    await page
-      .locator("#mobile-nav")
-      .getByRole("link", { name: "Selected work" })
-      .click();
-    await expect(page.locator("#mobile-nav")).not.toBeVisible();
-    await expect(page).toHaveURL(/#work/);
-  }
 });
-test("each detail page exists and unknown projects have a 404", async ({
+test("project pages, skill details, contact dialog, and audio work", async ({
   page,
-}) => {
+}, info) => {
+  await ready(page);
+  if (info.project.name !== "reduced-motion") await scrub(page, "skills", 0.01);
+  await page.getByRole("button", { name: "Python", exact: false }).click();
+  await expect(page.locator(".tech-description")).toContainText(
+    "A language for turning ideas",
+  );
+  if (info.project.name !== "reduced-motion") await scrub(page, "contact", 0.9);
+  await page.getByRole("button", { name: "Start a conversation" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("dialog")).toContainText("not been verified");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  const sound = page.getByRole("button", { name: "Turn ambient sound on" });
+  await expect(sound).toHaveAttribute("aria-pressed", "false");
+  await sound.click();
+  await page.getByRole("button", { name: "Turn ambient sound off" }).click();
+  if (info.project.name !== "reduced-motion") await scrub(page, "work", 0.01);
+  await page
+    .locator(".work-panel")
+    .first()
+    .getByRole("link", { name: "Explore the idea" })
+    .click();
+  await expect(page).toHaveURL(/projects\/ai-code-review/);
+  await expect(page.locator("h1")).toHaveText("A second set of eyes.");
+  await page.getByRole("link", { name: "Back to the explorations" }).click();
+  await expect(page).toHaveURL(/#work/);
   for (const slug of [
-    "ai-code-review",
     "placement-prediction",
     "rag-application",
     "interactive-web",
     "data-explorations",
   ]) {
-    const response = await page.goto(`/projects/${slug}`);
-    expect(response?.status()).toBe(200);
+    expect((await page.goto(`/projects/${slug}`))?.status()).toBe(200);
     await expect(page.locator(".detail-story")).toBeVisible();
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-    ).toBeTruthy();
   }
-  const response = await page.goto("/projects/not-a-project");
-  expect(response?.status()).toBe(404);
+  expect((await page.goto("/projects/unknown"))?.status()).toBe(404);
 });
-
-test("ambient audio is opt-in and contact is keyboard dismissible", async ({
+test("reduced-motion content and automated accessibility checks", async ({
   page,
 }) => {
-  await page.goto("/");
-  const sound = page.getByRole("button", { name: "Turn ambient sound on" });
-  await expect(sound).toHaveAttribute("aria-pressed", "false");
-  await sound.click();
-  await expect(
-    page.getByRole("button", { name: "Turn ambient sound off" }),
-  ).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "Turn ambient sound off" }).click();
-  await page.getByRole("button", { name: "Start a conversation" }).click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).not.toBeVisible();
-});
-
-test("WCAG A/AA automated checks pass for the exhibition and a case study", async ({
-  page,
-}) => {
-  const { default: AxeBuilder } = await import("@axe-core/playwright");
-  // Stable final styles, not intermediate reveal-animation frames.
   await page.emulateMedia({ reducedMotion: "reduce" });
-  for (const path of ["/", "/projects/ai-code-review"]) {
-    await page.goto(path);
-    await expect(page.locator("h1")).toBeVisible();
-    const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa"])
-      .analyze();
-    expect(results.violations).toEqual([]);
-  }
+  await ready(page);
+  await expect(page.locator(".pin-spacer")).toHaveCount(0);
+  await expect(page.locator(".work-panel")).toHaveCount(5);
+  await expect(page.locator(".journey-panel")).toHaveCount(5);
+  await expect(page.locator(".world-canvas")).toHaveCount(0);
+  for (const id of ids)
+    await expect(page.locator(`#${id}`)).not.toHaveAttribute("inert");
+  const result = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa"])
+    .analyze();
+  expect(result.violations).toEqual([]);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
+});
+test("one demand-rendered 3D world responds to scroll instead of elapsed time", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "GPU smoke test runs once.");
+  await ready(page);
+  await expect(page.locator(".world-canvas canvas")).toHaveCount(1, {
+    timeout: 30000,
+  });
+  await scrub(page, "hero", 0.1);
+  const canvas = page.locator("canvas");
+  await expect(canvas).toHaveAttribute("data-camera-z", /\d/);
+  const before = await canvas.getAttribute("data-camera-z");
+  await scrub(page, "hero", 0.6);
+  await expect(canvas).not.toHaveAttribute("data-camera-z", before!);
+  expect(Number(await canvas.getAttribute("data-spread"))).toBeGreaterThan(0.7);
+  const pose = await canvas.getAttribute("data-camera-z");
+  await page.waitForTimeout(300);
+  await expect(canvas).toHaveAttribute("data-camera-z", pose!);
+  await scrub(page, "hero", 0.995);
+  expect(Number(await canvas.getAttribute("data-spread"))).toBeLessThan(0.1);
+  await expect(page.locator("canvas")).toHaveCount(1);
 });
 
-test("the opening can be skipped and the live sculpture is optional", async ({
+test("wheel or touch input advances and reverses the actual scene clock", async ({
   page,
-}, testInfo) => {
-  test.skip(
-    testInfo.project.name !== "desktop",
-    "WebGL smoke test runs once; all viewports share the same lazy-loaded component.",
+}, info) => {
+  test.skip(info.project.name === "reduced-motion");
+  await ready(page);
+  const touch =
+    info.project.name === "mobile" || info.project.name === "tablet";
+  const client = touch ? await page.context().newCDPSession(page) : null;
+  const swipe = async (from: number, to: number) => {
+    await client!.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [{ x: 180, y: from }],
+    });
+    const step = to > from ? 40 : -40;
+    for (let y = from + step; step > 0 ? y <= to : y >= to; y += step) {
+      await client!.send("Input.dispatchTouchEvent", {
+        type: "touchMove",
+        touchPoints: [{ x: 180, y }],
+      });
+      await page.waitForTimeout(16);
+    }
+    await client!.send("Input.dispatchTouchEvent", {
+      type: "touchEnd",
+      touchPoints: [],
+    });
+  };
+  if (touch) await swipe(620, 180);
+  else await page.mouse.wheel(0, 650);
+  await expect
+    .poll(async () =>
+      Number(await page.locator("#awakening").getAttribute("data-progress")),
+    )
+    .toBeGreaterThan(0.15);
+  const forward = Number(
+    await page.locator("#awakening").getAttribute("data-progress"),
   );
-  const errors: string[] = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  test.setTimeout(90000);
-  await test.step("Open a fresh exhibition and skip the introduction", async () => {
-    await page.goto("/");
-    await page.getByRole("button", { name: /Skip intro/ }).click();
-  });
-  await expect(page.locator(".opening")).toHaveAttribute("aria-hidden", "true");
-  await expect(page.locator(".live-scene canvas")).toHaveCount(0);
-  await page.getByRole("button", { name: "EXPLORE THE FORM ↗" }).click();
-  await expect(page.locator(".live-scene canvas")).toHaveCount(1);
-  await page.getByRole("button", { name: "RETURN TO STILL ↗" }).click();
-  await expect(page.locator(".live-scene canvas")).toHaveCount(0);
-  expect(errors).toEqual([]);
+  if (touch) await swipe(180, 780);
+  else await page.mouse.wheel(0, -900);
+  await expect
+    .poll(async () =>
+      Number(await page.locator("#awakening").getAttribute("data-progress")),
+    )
+    .toBeLessThan(forward - 0.05);
+});
+
+test("changing motion preferences tears down and recreates exactly eight pins", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop");
+  await ready(page);
+  await scrub(page, "hero", 0.5);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(page.locator(".pin-spacer")).toHaveCount(0);
+  await expect(page.locator(".work-panel[inert]")).toHaveCount(0);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await expect(page.locator(".pin-spacer")).toHaveCount(8);
+  await scrub(page, "hero", 0.4);
+  await expect(page.locator(".hud-chapter")).toContainText("POSSIBILITY");
 });
