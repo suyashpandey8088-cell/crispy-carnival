@@ -1,46 +1,73 @@
-import { ArrowDown, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { personal } from "@/lib/content";
+import { copy } from "@/lib/art-direction";
+import {
+  ChromeSticker,
+  CircularSeal,
+  Smiley,
+  Tape,
+  Barcode,
+  Burst,
+} from "../graphics";
 import { SceneShell } from "./scene-shell";
 export function Awakening() {
   return (
     <SceneShell
       id="awakening"
       index={0}
-      title="The awakening"
-      className="awakening-scene"
+      title="The internet is my canvas"
+      className="opening-scene"
     >
-      <div className="awakening-coordinate mono">
-        FIG. 001
+      <div className="opening-grid" aria-hidden="true" />
+      <span className="opening-eyebrow mono">{copy.opening.eyebrow}</span>
+      <h1 className="canvas-headline" aria-label="The internet is my canvas.">
+        {copy.opening.lines.map((line, i) => (
+          <span className={`canvas-word word-${i}`} key={line}>
+            {line}
+          </span>
+        ))}
+      </h1>
+      <div className="opening-side-note mono">
+        IDEAS WITHOUT BORDERS.
         <br />
-        INTELLIGENCE, BEFORE FORM.
+        CODE WITHOUT THE ORDINARY.
+        <br />A LITTLE CONTROLLED CHAOS.
       </div>
-      <div className="awakening-aside">
-        <span className="mono">EVERY POSSIBILITY BEGINS</span>
-        <p>
-          with a <em>thought.</em>
+      <ChromeSticker className="opening-chrome" priority />
+      <CircularSeal className="opening-seal" />
+      <div className="creative-sticker">
+        CREATIVE
+        <br />
+        BY DEFAULT.
+        <ArrowUpRight size={24} />
+      </div>
+      <Smiley className="opening-smiley" />
+      <Burst className="opening-burst" />
+      <div className="opening-profile">
+        <strong>
+          {personal.name.toUpperCase()}
+          <sup>®</sup>
+        </strong>
+        <p className="mono">
+          {copy.opening.description}
+          <br />
+          {copy.opening.roles}
         </p>
+        <Barcode />
       </div>
-      <div className="awakening-name">
-        <p className="mono">ENGINEER. EXPLORER. AN INDEPENDENT MIND.</p>
-        <h1 aria-label={personal.name}>
-          {personal.name
-            .toUpperCase()
-            .split("")
-            .map((letter, i) => (
-              <span className="name-letter" aria-hidden="true" key={i}>
-                {letter === " " ? "\u00a0" : letter}
-              </span>
-            ))}
-        </h1>
-      </div>
-      <a href="#hero" className="skip-awakening mono">
-        STEP INSIDE <ArrowUpRight size={13} />
+      <Tape className="opening-tape">{copy.opening.marquee}</Tape>
+      <a className="scroll-invitation mono" href="#about">
+        <span>
+          SCROLL TO
+          <br />
+          MAKE A MESS.
+        </span>
+        <ArrowDownRight />
       </a>
-      <div className="awakening-scroll mono">
-        <span className="scroll-line" />
-        <span>SCROLL TO AWAKEN</span>
-        <ArrowDown size={13} />
-      </div>
+      <span className="opening-coordinate mono">
+        NOT A TEMPLATE.
+        <br />A STATE OF MIND.
+      </span>
     </SceneShell>
   );
 }

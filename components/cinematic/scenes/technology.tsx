@@ -1,33 +1,45 @@
 "use client";
 import { useState } from "react";
 import { skillGroups } from "@/lib/content";
+import { copy } from "@/lib/art-direction";
 import { SceneShell } from "./scene-shell";
+import { Burst, Barcode } from "../graphics";
 import { goToSceneProgress } from "../director";
 export function TechnologyScene() {
   const [description, setDescription] = useState(
-    "Select a technology to explore its role in the toolkit.",
+    "Touch or hover a technology. Find out what makes it tick.",
   );
   return (
     <SceneShell
       id="skills"
-      index={5}
-      title="The technical world"
+      index={4}
+      title="The technical playground"
       className="technology-scene"
     >
       <div className="technology-heading">
-        <span className="mono gold">TOOLS ARE EXTENSIONS</span>
+        <span className="mono">{copy.skills.label}</span>
         <h2>
-          of <em>imagination.</em>
+          MY TOOLBOX
+          <br />
+          IS A LITTLE
+          <br />
+          <span>UNHINGED.</span>
         </h2>
       </div>
       <div className="tech-orbit tech-orbit-one" aria-hidden="true" />
       <div className="tech-orbit tech-orbit-two" aria-hidden="true" />
+      <Burst className="tech-burst" />
       <div className="tech-category-nav">
         {skillGroups.map((g, i) => (
           <button
             className="mono tech-nav"
             key={g.title}
-            onClick={() => goToSceneProgress("skills", i / 3)}
+            onClick={() =>
+              goToSceneProgress(
+                "skills",
+                i / Math.max(1, skillGroups.length - 1),
+              )
+            }
           >
             <span>0{i + 1}</span>
             {g.title}
@@ -36,8 +48,10 @@ export function TechnologyScene() {
       </div>
       <div className="tech-panels">
         {skillGroups.map((g, i) => (
-          <div key={g.title} className="tech-panel" data-panel={i}>
-            <span className="mono gold">CONSTELLATION 0{i + 1}</span>
+          <div className="tech-panel" data-panel={i} key={g.title}>
+            <span className="mono">
+              TOOLKIT_0{i + 1} / NO BORING TOOLS. JUST BORING USES.
+            </span>
             <h3>{g.title}</h3>
             <div className="tech-labels">
               {g.skills.map((s, n) => (
@@ -61,10 +75,10 @@ export function TechnologyScene() {
       <p className="tech-description" aria-live="polite">
         {description}
       </p>
-      <span className="tech-coordinates mono">
-        KNOWLEDGE IS NOT STATIC.
-        <br />
-        NEITHER IS THIS WORLD.
+      <Barcode className="tech-barcode" />
+      <span className="tech-label-note mono">
+        NOT A SKILL METER.
+        <br />A PLAYGROUND OF POSSIBILITIES.
       </span>
     </SceneShell>
   );

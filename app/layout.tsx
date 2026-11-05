@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import "@fontsource/cormorant-garamond/400.css";
+import "@fontsource-variable/space-grotesk";
+import "@fontsource-variable/syne";
+import "@fontsource/anton/400.css";
 import "@fontsource/cormorant-garamond/400-italic.css";
-import "@fontsource/cormorant-garamond/500.css";
-import "@fontsource-variable/dm-sans";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Suyash Pandey — The Architecture of Intelligence",
+  title: "Suyash Pandey® — The Internet Is My Canvas.",
   description:
-    "Engineering ideas into reality. An exploration of AI, data science, creative development, and the thinking behind the work of Suyash Pandey.",
+    "A maximalist digital playground by Suyash Pandey. AI, data science, creative development, and a little controlled chaos.",
   robots: { index: true, follow: true },
 };
 export default function RootLayout({
