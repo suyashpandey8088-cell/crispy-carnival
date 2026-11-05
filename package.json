@@ -1,5 +1,5 @@
 {
-  "name": "architecture-of-intelligence",
+  "name": "the-internet-is-my-canvas",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -12,7 +12,9 @@
     "format": "prettier --write app components lib tests *.ts *.mts *.mjs"
   },
   "dependencies": {
-    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource-variable/space-grotesk": "^5.3.0",
+    "@fontsource-variable/syne": "^5.3.0",
+    "@fontsource/anton": "^5.3.0",
     "@fontsource/cormorant-garamond": "^5.3.0",
     "@react-three/drei": "^10.0.0",
     "@react-three/fiber": "^9.1.0",

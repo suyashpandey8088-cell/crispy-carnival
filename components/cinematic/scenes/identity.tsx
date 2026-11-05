@@ -1,37 +1,53 @@
 import { personal } from "@/lib/content";
+import { copy } from "@/lib/art-direction";
+import { ChromeSticker, Smiley, Burst, Tape } from "../graphics";
 import { SceneShell } from "./scene-shell";
 export function IdentityScene() {
   return (
     <SceneShell
       id="about"
-      index={2}
-      title="The mind behind the work"
+      index={1}
+      title={copy.about.label}
       className="identity-scene"
     >
-      <div className="identity-orbit" aria-hidden="true" />
+      <div className="identity-halftone" aria-hidden="true" />
       <h2 className="identity-headline">
-        <span>Curiosity</span>
-        <span>drives</span>
-        <em>everything.</em>
+        {copy.about.lines.map((line, i) => (
+          <span className={`identity-line line-${i}`} key={line}>
+            {line}
+          </span>
+        ))}
       </h2>
-      <div className="identity-biography">
-        <span className="mono gold">NOT A JOB TITLE. A WAY OF THINKING.</span>
-        <h3>
-          An engineer by education.
+      <Burst className="identity-burst" />
+      <ChromeSticker className="identity-chrome" />
+      <div className="identity-window art-pane">
+        <div className="window-chrome">
+          <span>● ● ●</span>
+          <span>human_glitch.exe</span>
+          <span>×</span>
+        </div>
+        <div className="identity-biography">
+          <span className="mono">MEET THE HUMAN BEHIND THE TABS.</span>
+          <h3>{copy.about.subhead}</h3>
+          <p>{personal.introduction}</p>
+          <p>{personal.interests}</p>
+          <span className="profile-name">
+            {personal.name}
+            <span>↗</span>
+          </span>
+        </div>
+      </div>
+      <div className="identity-sticker">
+        <Smiley />
+        <span>
+          100% HUMAN.
           <br />
-          <em>An explorer by nature.</em>
-        </h3>
-        <p>{personal.introduction}</p>
-        <p>{personal.interests}</p>
+          MOSTLY CAFFEINATED.
+        </span>
       </div>
-      <div className="identity-words mono">
-        <span>INTELLIGENCE</span>
-        <span>IMAGINATION</span>
-        <span>INTENTION</span>
-      </div>
-      <span className="identity-footnote mono">
-        THINK DEEPLY. BUILD MEANINGFULLY. STAY CURIOUS.
-      </span>
+      <Tape className="identity-tape">
+        THINK DIFFERENT. THEN BUILD DIFFERENT. ✳
+      </Tape>
     </SceneShell>
   );
 }

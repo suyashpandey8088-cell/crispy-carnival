@@ -2,7 +2,6 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 const ids = [
   "awakening",
-  "hero",
   "about",
   "experience",
   "work",
@@ -39,7 +38,7 @@ async function ready(page: Page) {
     "true",
   );
 }
-test("all eight pinned timelines scrub, reverse, and release without blank gaps", async ({
+test("all seven pinned timelines scrub, reverse, and release without blank gaps", async ({
   page,
 }, info) => {
   test.skip(
@@ -50,7 +49,7 @@ test("all eight pinned timelines scrub, reverse, and release without blank gaps"
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await ready(page);
-  await expect(page.locator(".pin-spacer")).toHaveCount(8);
+  await expect(page.locator(".pin-spacer")).toHaveCount(7);
   for (const id of ids) {
     await scrub(page, id, 0.35);
     const top = await page
@@ -87,8 +86,8 @@ test("all eight pinned timelines scrub, reverse, and release without blank gaps"
         .toBeLessThan(3);
     }
   }
-  await scrub(page, "hero", 0.2);
-  await expect(page.locator(".hud-chapter")).toContainText("POSSIBILITY");
+  await scrub(page, "awakening", 0.2);
+  await expect(page.locator(".hud-chapter")).toContainText("MY CANVAS");
   expect(errors).toEqual([]);
 });
 test("horizontal journey and project replacement expose each entry", async ({
@@ -142,20 +141,30 @@ test("chapter navigation, deep links, refresh, and browser back remain natural",
     "true",
   );
   if (info.project.name !== "reduced-motion") {
-    await expect(page.locator(".hud-chapter")).toContainText("JOURNEY");
+    await expect(page.locator(".hud-chapter")).toContainText(
+      "EXPERIENCE ARCHIVE",
+    );
     await expect
       .poll(async () =>
         Number(await page.locator("#experience").getAttribute("data-progress")),
       )
       .toBeLessThan(0.05);
-    await page.getByRole("link", { name: "Chapter 5: Selected work" }).click();
+    await page
+      .getByRole("link", { name: "Chapter 4: Project multiverse" })
+      .click();
     await expect(page).toHaveURL(/#work/);
-    await expect(page.locator(".hud-chapter")).toContainText("SELECTED WORK");
+    await expect(page.locator(".hud-chapter")).toContainText(
+      "PROJECT MULTIVERSE",
+    );
     await page.reload();
-    await expect(page.locator(".hud-chapter")).toContainText("SELECTED WORK");
+    await expect(page.locator(".hud-chapter")).toContainText(
+      "PROJECT MULTIVERSE",
+    );
     await page.goBack();
     await expect(page).toHaveURL(/#experience/);
-    await expect(page.locator(".hud-chapter")).toContainText("JOURNEY");
+    await expect(page.locator(".hud-chapter")).toContainText(
+      "EXPERIENCE ARCHIVE",
+    );
   }
   expect(
     await page.evaluate(
@@ -183,13 +192,16 @@ test("project pages, skill details, contact dialog, and audio work", async ({
   await sound.click();
   await page.getByRole("button", { name: "Turn ambient sound off" }).click();
   if (info.project.name !== "reduced-motion") await scrub(page, "work", 0.01);
-  await page
+  const explore = page
     .locator(".work-panel")
     .first()
-    .getByRole("link", { name: "Explore the idea" })
-    .click();
+    .getByRole("link", { name: "Explore the idea" });
+  await explore.scrollIntoViewIfNeeded();
+  await explore.click();
   await expect(page).toHaveURL(/projects\/ai-code-review/);
-  await expect(page.locator("h1")).toHaveText("A second set of eyes.");
+  await expect(page.locator("h1")).toHaveText(
+    "AI Code Review & Bug Detection Assistant",
+  );
   await page.getByRole("link", { name: "Back to the explorations" }).click();
   await expect(page).toHaveURL(/#work/);
   for (const slug of [
@@ -232,17 +244,17 @@ test("one demand-rendered 3D world responds to scroll instead of elapsed time", 
   await expect(page.locator(".world-canvas canvas")).toHaveCount(1, {
     timeout: 30000,
   });
-  await scrub(page, "hero", 0.1);
+  await scrub(page, "awakening", 0.1);
   const canvas = page.locator("canvas");
   await expect(canvas).toHaveAttribute("data-camera-z", /\d/);
   const before = await canvas.getAttribute("data-camera-z");
-  await scrub(page, "hero", 0.6);
+  await scrub(page, "awakening", 0.6);
   await expect(canvas).not.toHaveAttribute("data-camera-z", before!);
-  expect(Number(await canvas.getAttribute("data-spread"))).toBeGreaterThan(0.7);
+  expect(Number(await canvas.getAttribute("data-spread"))).toBeGreaterThan(0.5);
   const pose = await canvas.getAttribute("data-camera-z");
   await page.waitForTimeout(300);
   await expect(canvas).toHaveAttribute("data-camera-z", pose!);
-  await scrub(page, "hero", 0.995);
+  await scrub(page, "awakening", 0.995);
   expect(Number(await canvas.getAttribute("data-spread"))).toBeLessThan(0.1);
   await expect(page.locator("canvas")).toHaveCount(1);
 });
@@ -292,17 +304,68 @@ test("wheel or touch input advances and reverses the actual scene clock", async 
     .toBeLessThan(forward - 0.05);
 });
 
-test("changing motion preferences tears down and recreates exactly eight pins", async ({
+test("changing motion preferences tears down and recreates exactly seven pins", async ({
   page,
 }, info) => {
   test.skip(info.project.name !== "desktop");
   await ready(page);
-  await scrub(page, "hero", 0.5);
+  await scrub(page, "awakening", 0.5);
+  // Let the actual first WebGL frame finish before asking Chromium to destroy
+  // its context. Software renderers can otherwise block media-change delivery.
+  await expect(page.locator(".world-canvas canvas")).toHaveAttribute(
+    "data-camera-z",
+    /\d/,
+    { timeout: 30000 },
+  );
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.locator(".pin-spacer")).toHaveCount(0);
   await expect(page.locator(".work-panel[inert]")).toHaveCount(0);
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await expect(page.locator(".pin-spacer")).toHaveCount(8);
-  await scrub(page, "hero", 0.4);
-  await expect(page.locator(".hud-chapter")).toContainText("POSSIBILITY");
+  await expect(page.locator(".pin-spacer")).toHaveCount(7);
+  await scrub(page, "awakening", 0.4);
+  await expect(page.locator(".hud-chapter")).toContainText("MY CANVAS");
+});
+
+test("floating menu supports keyboard, scene jumps and focus return", async ({
+  page,
+}, info) => {
+  await ready(page);
+  const menu = page.getByRole("button", { name: "MENU", exact: true });
+  await menu.click();
+  const dialog = page.getByRole("dialog", { name: "JUMP RIGHT IN" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("navigation")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).not.toBeVisible();
+  await expect(menu).toBeFocused();
+  await menu.click();
+  await dialog.getByRole("link", { name: "04 Projects" }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(page).toHaveURL(/#work/);
+  if (info.project.name !== "reduced-motion")
+    await expect(page.locator(".hud-chapter")).toContainText(
+      "PROJECT MULTIVERSE",
+    );
+  await menu.click();
+  const result = await new AxeBuilder({ page })
+    .include(".navigation-dialog")
+    .withTags(["wcag2a", "wcag2aa"])
+    .analyze();
+  expect(result.violations).toEqual([]);
+  await page
+    .getByRole("button", { name: "Close navigation", exact: true })
+    .click();
+  await expect(menu).toBeFocused();
+});
+
+test("chrome sculpture is a real keyboard and touch interaction", async ({
+  page,
+}) => {
+  await ready(page);
+  const sculpture = page.locator(".opening-chrome");
+  await sculpture.click();
+  await expect(sculpture).toHaveAttribute("data-turn", "45");
+  await sculpture.focus();
+  await page.keyboard.press("Enter");
+  await expect(sculpture).toHaveAttribute("data-turn", "90");
 });

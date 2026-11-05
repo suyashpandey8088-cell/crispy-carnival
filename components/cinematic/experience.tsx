@@ -6,7 +6,7 @@ import { useCinematicDirector } from "./director";
 import { chapters } from "./world-state";
 import WorldStage from "./world-stage";
 import { Awakening } from "./scenes/awakening";
-import { HeroScene } from "./scenes/hero";
+
 import { IdentityScene } from "./scenes/identity";
 import { JourneyScene } from "./scenes/journey";
 import { WorkScene } from "./scenes/work";
@@ -22,7 +22,7 @@ export default function CinematicExperience() {
       <Header />
       <main id="main">
         <Awakening />
-        <HeroScene />
+
         <IdentityScene />
         <JourneyScene />
         <WorkScene />
@@ -39,16 +39,18 @@ export default function CinematicExperience() {
             aria-label={`Chapter ${i + 1}: ${chapter.title}`}
           >
             <span className="chapter-tooltip">{chapter.title}</span>
-            <span className="chapter-mark" />
+            <span className="chapter-mark">0{i + 1}</span>
           </a>
         ))}
       </nav>
       <div className="cinema-hud" aria-hidden="true">
-        <span className="hud-chapter mono">01 / THE AWAKENING</span>
+        <span className="hud-chapter mono">01 / MY CANVAS</span>
         <div className="hud-progress">
           <span className="hud-scene-progress" />
         </div>
-        <span className="mono hud-instruction">SCROLL TO UNFOLD THE STORY</span>
+        <span className="mono hud-instruction">
+          SCROLL. BREAK THINGS. REPEAT.
+        </span>
       </div>
       <Ambient />
       <CustomCursor />

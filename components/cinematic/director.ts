@@ -62,117 +62,169 @@ function choreography(
   root: HTMLElement,
   tl: gsap.core.Timeline,
 ) {
-  const q = (s: string) => root.querySelectorAll(s);
+  const q = (selector: string) => root.querySelectorAll(selector);
   switch (index) {
     case 0:
-      tl.fromTo(
-        q(".name-letter"),
-        { opacity: 0.12, yPercent: 70 },
-        { opacity: 1, yPercent: 0, stagger: 0.027, duration: 0.16 },
-        0.1,
+      tl.to(
+        q(".canvas-word"),
+        {
+          xPercent: (i) => (i % 2 ? 35 : -45),
+          yPercent: (i) => (i % 2 ? -20 : 20),
+          rotation: (i) => (i % 2 ? 8 : -8),
+          scaleX: 1.15,
+          stagger: 0.035,
+          duration: 0.62,
+        },
+        0.25,
       )
-        .to(q(".awakening-aside"), { x: -55, opacity: 0, duration: 0.24 }, 0.55)
         .to(
-          q(".awakening-name"),
-          { scale: 1.08, yPercent: -30, duration: 0.32 },
-          0.6,
+          q(".opening-chrome"),
+          {
+            xPercent: 40,
+            yPercent: -25,
+            rotation: 95,
+            scale: 1.4,
+            duration: 1,
+          },
+          0,
         )
         .to(
-          q(".awakening-scroll"),
-          { opacity: 0, y: 20, duration: 0.15 },
-          0.05,
-        );
+          q(".opening-smiley"),
+          { xPercent: -150, yPercent: -150, rotation: -120, duration: 1 },
+          0,
+        )
+        .to(
+          q(".creative-sticker"),
+          { rotation: -25, yPercent: 55, duration: 1 },
+          0,
+        )
+        .to(
+          q(".opening-seal"),
+          { rotation: 240, yPercent: -80, duration: 1 },
+          0,
+        )
+        .to(q(".opening-profile"), { yPercent: -20, duration: 1 }, 0);
       break;
     case 1:
       tl.fromTo(
-        q(".possibility-copy"),
-        { xPercent: -3, opacity: 1 },
-        { xPercent: 0, opacity: 1, duration: 0.25 },
-        0,
-      )
-        .fromTo(
-          q(".floating-thought"),
-          { y: 70, opacity: 0 },
-          { y: 0, opacity: 1, stagger: 0.08, duration: 0.16 },
-          0.48,
-        )
-        .to(
-          q(".possibility-copy h2"),
-          { scale: 0.95, x: -15, duration: 0.3 },
-          0.65,
-        )
-        .to(
-          q(".floating-thought"),
-          { y: -35, opacity: 0, stagger: 0.035, duration: 0.1 },
-          0.85,
-        );
-      break;
-    case 2:
-      tl.fromTo(
-        q(".identity-headline > *"),
-        { xPercent: (i) => (i % 2 ? 35 : -12), opacity: 0.4 },
-        { xPercent: 0, opacity: 1, stagger: 0.12, duration: 0.22 },
+        q(".identity-line"),
+        { xPercent: (i) => (i % 2 ? 22 : -7) },
+        { xPercent: 0, stagger: 0.08, duration: 0.35 },
         0,
       )
         .to(
           q(".identity-headline"),
-          { scale: 0.67, xPercent: 0, yPercent: -20, duration: 0.3 },
-          0.45,
+          { scale: 0.78, xPercent: -3, yPercent: -8, duration: 0.32 },
+          0.35,
         )
         .fromTo(
-          q(".identity-biography"),
-          { xPercent: 25, opacity: 0 },
-          { xPercent: 0, opacity: 1, duration: 0.3 },
-          0.5,
-        )
-        .fromTo(
-          q(".identity-words span"),
-          { y: 90, opacity: 0 },
-          { y: 0, opacity: 1, stagger: 0.07, duration: 0.15 },
-          0.55,
+          q(".identity-window"),
+          { yPercent: 55, rotation: 12, autoAlpha: 0 },
+          { yPercent: 0, rotation: -4, autoAlpha: 1, duration: 0.35 },
+          0.35,
         )
         .to(
-          q(".identity-orbit"),
-          { rotation: 100, scale: 1.3, duration: 1 },
+          q(".identity-chrome"),
+          { rotation: 120, xPercent: 30, scale: 1.2, duration: 1 },
+          0,
+        )
+        .to(
+          q(".identity-burst"),
+          { rotation: -100, scale: 1.3, duration: 1 },
           0,
         );
       break;
-    case 3: {
+    case 2: {
       const track = root.querySelector<HTMLElement>(".journey-track")!;
       tl.to(
         track,
         { x: () => -(track.scrollWidth - root.clientWidth), duration: 1 },
         0,
-      ).to(q(".journey-bottom-line span"), { scaleX: 1, duration: 1 }, 0);
+      )
+        .to(q(".journey-bottom-line span"), { scaleX: 1, duration: 1 }, 0)
+        .to(q(".journey-number"), { rotation: -8, duration: 1 }, 0)
+        .to(q(".journey-burst"), { rotation: 180, duration: 1 }, 0);
       break;
     }
-    case 4:
+    case 3:
       dissolve(tl, root, ".work-panel");
+      const panels = Array.from(root.querySelectorAll(".work-panel"));
+      panels.forEach((panel, i) => {
+        const at = i / panels.length,
+          duration = 1 / panels.length;
+        tl.fromTo(
+          panel.querySelectorAll(".art-pane"),
+          { yPercent: 9, rotation: -4 },
+          { yPercent: -8, rotation: 3, stagger: 0.025, duration },
+          at,
+        );
+      });
       break;
-    case 5:
+    case 4:
       dissolve(tl, root, ".tech-panel");
-      tl.to(q(".tech-orbit-one"), { rotation: 150, scale: 1.3, duration: 1 }, 0)
+      tl.to(q(".tech-orbit-one"), { rotation: 190, scale: 1.4, duration: 1 }, 0)
         .to(
           q(".tech-orbit-two"),
-          { rotation: -110, scale: 0.8, duration: 1 },
+          { rotation: -150, scale: 0.8, duration: 1 },
           0,
         )
-        .to(q(".technology-heading"), { yPercent: -20, duration: 1 }, 0);
+        .to(q(".tech-burst"), { rotation: 220, duration: 1 }, 0)
+        .to(
+          q(".technology-heading"),
+          { skewX: -6, xPercent: -5, duration: 1 },
+          0,
+        );
       break;
+    case 5: {
+      const cards = Array.from(
+        root.querySelectorAll<HTMLElement>(".personal-panel"),
+      );
+      cards.forEach((card, i) => {
+        gsap.set(card, { zIndex: cards.length - i });
+        if (i < cards.length - 1)
+          tl.to(
+            card,
+            {
+              xPercent: -155,
+              yPercent: -90,
+              rotation: -42,
+              scale: 0.8,
+              duration: 0.35 / (cards.length - 1),
+            },
+            (i + 0.6) / (cards.length - 1),
+          );
+      });
+      tl.to(q(".personal-burst"), { rotation: 200, duration: 1 }, 0);
+      break;
+    }
     case 6:
-      dissolve(tl, root, ".personal-panel");
-      tl.to(q(".personal-heading"), { xPercent: -8, duration: 1 }, 0);
-      break;
-    case 7:
-      gsap.set(q(".final-invitation"), { autoAlpha: 0, y: 70 });
+      gsap.set(q(".final-invitation"), { autoAlpha: 0, yPercent: 35 });
       tl.to(
         q(".final-first"),
-        { scale: 1.13, yPercent: -12, autoAlpha: 0, duration: 0.3 },
-        0.23,
-      ).to(q(".final-invitation"), { autoAlpha: 1, y: 0, duration: 0.3 }, 0.5);
+        { scale: 2.5, rotation: -8, autoAlpha: 0, duration: 0.28 },
+        0.18,
+      )
+        .to(
+          q(".final-invitation"),
+          { autoAlpha: 1, yPercent: 0, duration: 0.3 },
+          0.42,
+        )
+        .fromTo(
+          q(".final-signature > span"),
+          { yPercent: 130 },
+          { yPercent: 0, stagger: 0.008, duration: 0.15 },
+          0.7,
+        )
+        .to(
+          q(".final-chrome"),
+          { rotation: 180, yPercent: 25, scale: 0.8, duration: 1 },
+          0,
+        )
+        .to(q(".final-seal"), { rotation: 200, duration: 1 }, 0);
       break;
   }
-  // A normalized, one-unit master clock makes refresh/responsive durations predictable.
+  const marquees = q(".marquee-inner");
+  if (marquees.length) tl.to(marquees, { xPercent: -25, duration: 1 }, 0);
   tl.to({}, { duration: 0.001 }, 0.999);
 }
 export function useCinematicDirector(
@@ -193,8 +245,20 @@ export function useCinematicDirector(
         host.dataset.motion = reduced ? "reduced" : "full";
         if (reduced) {
           directWorld(0, 0.4);
-          host.dataset.ready = "true";
-          return;
+          // The readable path also waits for typography before exposing layout as ready.
+          // Otherwise a late local font can move a native link during a click/scroll.
+          let alive = true;
+          let frame = 0;
+          document.fonts.ready.then(() => {
+            if (!alive) return;
+            frame = requestAnimationFrame(() => {
+              if (alive) host.dataset.ready = "true";
+            });
+          });
+          return () => {
+            alive = false;
+            cancelAnimationFrame(frame);
+          };
         }
         let active = true;
         const previousRestoration = history.scrollRestoration;
@@ -223,19 +287,21 @@ export function useCinematicDirector(
             .forEach((link, i) => {
               link.setAttribute("aria-current", i === index ? "step" : "false");
             });
-          const name = host.querySelector(".hud-chapter");
-          if (name)
-            name.textContent = `${String(index + 1).padStart(2, "0")} / ${chapters[index].title.toUpperCase()}`;
+          host
+            .querySelectorAll(".hud-chapter, .nav-scene-name")
+            .forEach((name) => {
+              name.textContent = `${String(index + 1).padStart(2, "0")} / ${chapters[index].title.toUpperCase()}`;
+            });
         };
         const updates: ((progress: number) => void)[] = [];
         scenes.forEach((root, index) => {
           const chapter = chapters[index];
           const panelSelector =
-            index === 3
+            index === 2
               ? ".journey-panel"
-              : index === 4
+              : index === 3
                 ? ".work-panel"
-                : index === 5
+                : index === 4
                   ? ".tech-panel"
                   : ".personal-panel";
           const count = root.querySelectorAll(panelSelector).length;
@@ -245,7 +311,7 @@ export function useCinematicDirector(
             root.dataset.progress = progress.toFixed(4);
             const panel = Math.min(
               count - 1,
-              index === 3
+              index === 2
                 ? Math.round(progress * Math.max(0, count - 1))
                 : Math.floor(progress * Math.max(0, count - 1) + 0.12),
             );
@@ -260,7 +326,7 @@ export function useCinematicDirector(
                   button.setAttribute("aria-pressed", String(i === panel)),
                 );
             }
-            if (index === 7) {
+            if (index === 6) {
               const invitation =
                 root.querySelector<HTMLElement>(".final-invitation");
               if (invitation) invitation.inert = progress < 0.5;

@@ -27,6 +27,7 @@ export type Project = {
   slug: string;
   number: string;
   title: string;
+  displayTitle: string;
   category: string;
   year: string;
   description: string;
@@ -44,7 +45,8 @@ export const projects: Project[] = [
   {
     slug: "ai-code-review",
     number: "01",
-    title: "A second set of eyes.",
+    title: "AI Code Review & Bug Detection Assistant",
+    displayTitle: "CODE THAT\nCHECKS CODE.",
     category: "AI CODE REVIEW & BUG DETECTION",
     year: "CONCEPT / EDITABLE",
     description:
@@ -73,7 +75,8 @@ export const projects: Project[] = [
   {
     slug: "placement-prediction",
     number: "02",
-    title: "Patterns into possibility.",
+    title: "Student Placement Prediction System",
+    displayTitle: "PREDICT.\nDON’T GUESS.",
     category: "STUDENT PLACEMENT PREDICTION",
     year: "CONCEPT / EDITABLE",
     description:
@@ -102,7 +105,8 @@ export const projects: Project[] = [
   {
     slug: "rag-application",
     number: "03",
-    title: "Knowledge, connected.",
+    title: "RAG-based AI Application",
+    displayTitle: "CONNECT\nTHE DOTS.",
     category: "RETRIEVAL-AUGMENTED GENERATION",
     year: "CONCEPT / EDITABLE",
     description: "Bringing the right context to the conversations that matter.",
@@ -130,7 +134,8 @@ export const projects: Project[] = [
   {
     slug: "interactive-web",
     number: "04",
-    title: "Beyond the interface.",
+    title: "Interactive Web Experiences",
+    displayTitle: "WHAT IF\nTHE WEB?",
     category: "INTERACTIVE WEB EXPERIENCES",
     year: "ONGOING EXPLORATION",
     description: "Digital spaces that invite you to feel, play, and discover.",
@@ -158,7 +163,8 @@ export const projects: Project[] = [
   {
     slug: "data-explorations",
     number: "05",
-    title: "A question of data.",
+    title: "AI & Data Science Explorations",
+    displayTitle: "STAY\nUNFINISHED.",
     category: "AI & DATA SCIENCE EXPLORATIONS",
     year: "EDITABLE COLLECTION",
     description: "Small experiments. Unexpected connections. New questions.",
@@ -216,6 +222,7 @@ export const experiences = [
   company: null as string | null,
   dates: null as string | null,
   responsibilities: null as string | null,
+  technologies: null as string[] | null,
   achievements: [] as string[],
 }));
 export const skillGroups = [

@@ -1,6 +1,6 @@
-# Suyash Pandey — An Unfolding Story
+# SUYASH PANDEY® — THE INTERNET IS MY CANVAS.
 
-A continuous scroll-controlled portfolio exhibition. Eight independent cinematic scenes share one persistent metallic 3D world. The scroll wheel—not elapsed time—is the animation clock.
+A loud, neo-maximalist portfolio: Y2K chrome, brutalist windows, acid-lime posters, experimental type, comic cutouts, and seven genuinely scroll-controlled environments. Built with Next.js App Router, TypeScript, GSAP ScrollTrigger, Lenis, React Three Fiber / Three.js / Drei, Framer Motion, Tailwind and custom CSS.
 
 ## Run
 
@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. The server binds to `0.0.0.0` and accepts the Arena preview domain.
+The server binds to `0.0.0.0` and accepts the Arena preview origin. Browser code uses relative URLs; no browser-facing localhost API dependencies or external font services.
 
 ```bash
 npm run lint
@@ -20,79 +20,49 @@ npm run build
 npm start
 ```
 
-## The choreography
+## Seven scenes, one scroll clock
 
-| Scene             | Scroll-controlled action                                                       |
-| ----------------- | ------------------------------------------------------------------------------ |
-| Awakening         | Sculpture illumination, camera approach, letter-by-letter name reveal          |
-| Possibility       | Rotation → six separated metallic components → floating thoughts → reassembly  |
-| Identity          | Travelling editorial words, scaled/rearranged typography, biography reveal     |
-| Journey           | One pinned viewport, five horizontally travelling internship compositions      |
-| Work              | Five full-viewport projects replace one another through scrubbed spatial wipes |
-| Technical world   | Orbital structures, advancing camera, four technology constellations           |
-| Beyond technology | Chess, badminton, books, creativity and leadership enter/leave in place        |
-| Finale            | Sculpture recedes into darkness; an invitation replaces the opening statement  |
+| Scene | Environment | Scroll choreography |
+| --- | --- | --- |
+| My canvas | Electric lime, oversized Anton, inflated chrome, stickers | Words split and scatter, sculptures zoom/rotate, seal and tape travel |
+| The human glitch | Cobalt, orange cutout star, editorial profile window | Independent type travel and scale, window rearrangement, 3D rotation |
+| Experience archive | Purple, silver, acid-yellow files | A pinned vertical-controlled horizontal track reveals all five roles |
+| Project multiverse | Five distinct, full-screen visual universes | Reversible spatial wipes, layered terminal/chart/document/browser artwork |
+| Technical playground | Orange to cyan, chrome gyroscope, raw orbit lines | Four replacing tool groups, expanding geometry, hover/focus/touch explanations |
+| Other side of my brain | Pink comic zine, halftone, paper stack | Individually rotated panels physically leave the stack as the next is revealed |
+| Grand finale | Orange to lime, checkerboard, explosive typography | Opening statement blows apart; invitation and animated signature take over |
 
-All major transitions use normalized GSAP timelines with `scrub: true`. Each scene pins for a viewport-relative duration, with shorter travel distances on mobile. The natural one-viewport hand-off between scenes maintains visual continuity through the fixed world; it does not introduce an empty spacer. There is no scroll snapping, forced auto-advance, or timed introduction gate.
+The wheel/touch position controls animation time, including reversals. No automatic slide timers, scroll trapping, forced waits, or keyboard hijacking. Lenis runs on the GSAP ticker. Each timeline is independently pinned and scoped, while a global position synchronizer handles active/inert states, viewport handoffs and 3D blending deterministically. Hash links, refreshes, and browser history are supported. Layout resources settle before pin offsets and deep links are restored.
 
-## Code architecture
+## Architecture and editing
 
-- **`components/cinematic/scenes/`** — eight independent reusable React scene components plus the common `SceneShell`.
-- **`components/cinematic/director.ts`** — scoped GSAP match-media lifecycle, scene timelines, pin durations, horizontal track calculations, active-panel accessibility, Lenis integration, chapter navigation, deep-link restoration, and complete cleanup.
-- **`components/cinematic/world-state.ts`** — a small mutable render bridge. Scene progress deterministically defines rotation, fragment separation, assembly, illumination, camera approach, and composition. No React state update on every scroll frame.
-- **`components/cinematic/world-canvas.tsx`** — the one shared React Three Fiber canvas. Six procedural metallic parts, procedural reflections, and deterministic particles. No autonomous rotations, orbit controls, elapsed-time animation, or external HDR/model requests. `frameloop="demand"` invalidates only when the director publishes new scroll state; pixel ratio is capped at 1.
-- **`components/cinematic/world-stage.tsx`** — lazy-loaded WebGL, failure boundary, and a compressed artwork fallback that also follows scroll transforms. The scene remains usable without WebGL.
-- **`components/cinematic/experience.tsx`** — scene composition, persistent chapter navigation, and progress HUD.
-- **`app/cinematic.css`** — responsive cinematic and reduced-motion compositions.
-- **`components/portfolio.tsx`** — shared header, project visual studies, contact dialog, audio toggle, and detail-page footer.
-- **`components/interactions.tsx`** — Framer Motion magnetic interactions and fine-pointer custom cursor only. The previous independent entrance-reveal runtime and timed loading gate have been removed.
-- **`app/projects/[slug]/page.tsx`** — five statically rendered project-detail routes.
+- `lib/content.ts`: personal copy, contact details, internships, projects, skills and interests. **Unverified employers, dates, responsibilities, achievements, email, social URLs and project links remain explicitly absent.** Add real information here; never invent outcomes or metrics.
+- `lib/art-direction.ts`: chapter order, duration, palette, creative copy and project-universe themes. Experience/project durations scale with the content arrays.
+- `components/cinematic/scenes/`: seven independent compositions.
+- `components/cinematic/director.ts`: scroll choreography, horizontal travel, panel accessibility, deep-link/history handling and complete cleanup.
+- `components/cinematic/world-state.ts`: mutable scroll/camera/background state, cross-scene blending and pointer influence; no React state updates per frame.
+- `components/cinematic/world-stage.tsx` / `world-canvas.tsx`: one shared, dynamically imported, **demand-rendered** procedural chrome world. DPR is capped at 1, antialiasing is disabled, and hidden-world scroll changes do not render frames. No additional WebGL probe/context.
+- `components/navigation/floating-navigation.tsx`: compact floating controls and a native modal navigation overlay, with focus management, Escape dismissal, reduced-motion support and custom wipe transitions.
+- `components/cinematic/project-artwork.tsx`: five different responsive editorial illustrations, not pretend product screenshots.
+- `app/projects/[slug]/page.tsx`: statically generated, data-driven project detail pages with overview, problem, proposed solution/features, architecture, toolkit and honest link/verification states.
+- `app/cinematic.css`: maximalist scene compositions; mobile is separately art-directed rather than a reduced desktop canvas.
+- `app/globals.css`: shared graphics, dialogs, navigation, project artwork and detail routes.
 
-### Browser navigation
+To add an internship, append to `experiences` and supply verified fields; the horizontal track, controls and scroll length derive from the count. To add a project, append a `Project`, choose one of the supported `visual` universes (or add another artwork/theme), and the project panels, route generation and controls update automatically.
 
-Natural document scrolling is preserved. Same-page chapter links resolve to the actual ScrollTrigger start, rather than a transformed element's current DOM offset. Modified clicks and external/project links retain their browser behavior. Hashes are restored after fonts/load, pin calculations, and `lenis.resize()`—not against the document's unpinned height. Refresh and back/forward navigation are supported.
+## Accessibility and progressive enhancement
 
-Inactive overlapping project, technology, and interest panels are inert and hidden from accessibility APIs; active panels are keyboard navigable. Numbered controls provide alternatives to long scrolling sequences. Reduced-motion mode removes all pins, scrub transforms, the live canvas, and smooth scrolling and shows every entry in readable document order. Switching the preference at runtime tears down/recreates the appropriate experience.
+Reduced motion removes all pins and 3D, exposes every internship/project/tool group and lays out the comic as readable content. The same content-first CSS is the no-JavaScript baseline. Touch devices retain a native cursor and natural vertical pan. The custom cursor is fine-pointer only. Interactive chrome responds to keyboard and touch; skill descriptions respond to hover, focus and click. Inactive panels are inert. Dialogs use the browser top layer, trap focus natively, dismiss with Escape and return focus to the trigger. Audio is optional and **off by default**. No unverifiable external link is presented as functional.
 
-## Editing content
+The original AI-generated chrome asterisk was optimized to a transparent 125 KB WebP. Fonts are bundled locally. Project artwork uses lightweight CSS/SVG rather than large image/video downloads. The reflective 3D sculpture has procedural geometry and a small generated environment, with a static chrome fallback when WebGL is unavailable. Do not interpret software-rendered browser tests as a real-device FPS benchmark.
 
-**`lib/content.ts` is the content source of truth:**
-
-- `personal`: name, discipline, introduction, interests, email, social URLs, availability, achievements.
-- `experiences`: the five user-confirmed roles; companies, dates, actual responsibilities, and achievements remain unset.
-- `projects`: editorial title, proposed scope, technologies, features, architecture, verification note, GitHub/demo URLs, and visual direction.
-- `skillGroups`: editable user-supplied skills and descriptions—not proficiency ratings.
-- `interests`: personal-interest studies.
-
-Before publishing as a verified professional portfolio:
-
-1. Supply verified email and social profiles. Until then, the contact dialog transparently explains their absence; no fabricated destination is used.
-2. Add real internship company names, dates, responsibilities, and achievements.
-3. Replace proposed project scope with verified implementation details, source/demo URLs, real screenshots, and measured results.
-4. Review project status labels and dates. No achievements, accuracy metrics, or deployment URLs have been invented.
-5. Add a production canonical URL and review metadata in `app/layout.tsx`.
-
-Current project imagery is original editorial artwork, not a product screenshot. The two compressed WebP artworks total approximately 216 KB before Next.js image optimization. The supplied reference photographs are not used as website assets. Fonts are self-hosted. Ambient audio is synthesized locally, silent by default, and requires explicit opt-in.
-
-## Browser verification
+## Browser QA
 
 ```bash
-npx playwright install --with-deps chromium
+npx playwright install chromium  # standard development environment
 npm test
 ```
 
-The configuration starts or reuses the app server. A system Chromium can be supplied through `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
+`playwright.config.mts` covers desktop, touch tablet, touch mobile and reduced motion. If using a preinstalled Chromium, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. Tests cover all seven scene clocks forward/reverse, pin release and handoff geometry, five horizontal internships and five replacing projects, hashes/history/reload, project detail routes/404, skills, contact, audio, the single demand-rendered world, native wheel/touch input, motion-preference teardown, the modal menu/focus return, interactive chrome and axe accessibility scans. GPU-only / pinned-scene cases are intentionally skipped on inappropriate profiles.
 
-Playwright covers desktop (1440px), tablet (820px), mobile (390px), and reduced motion:
-
-- Every scene scrubbed forward and backward at measured progress points.
-- All eight pins and their natural releases/hand-offs, with no blank gaps.
-- Every horizontal internship and every full-screen project.
-- Chapter links, direct hashes, refresh, browser back, and overflow.
-- All project-detail routes and an unknown-project 404.
-- Technology descriptions, modal contact interaction, and opt-in audio.
-- Automated axe WCAG A/AA checks on the readable reduced-motion experience.
-- A desktop WebGL smoke test verifies one canvas, camera movement, component separation/reassembly, and a stable camera when scrolling stops.
-- Native wheel/touch scrolling and runtime reduced-motion teardown/recreation.
-
-Automated checks complement—not replace—real-device accessibility and GPU/performance review. Software-rendered headless Chromium is useful for correctness, not a claim of real-device frame rates. Build output, test artifacts, screenshots, and browser binaries are not committed.
+Production dependency audit: `npm audit --omit=dev` reports zero vulnerabilities at implementation time. Development-only audit advisories should be evaluated separately; no forced breaking dependency upgrades are applied.

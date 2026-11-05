@@ -17,12 +17,18 @@ function ScrollSculpture() {
       values[i] = Math.sin(i * 127.1 + 0.5) * (i % 3 === 2 ? 3 : 5);
     return values;
   }, []);
-  useEffect(() => subscribeWorld(invalidate), [invalidate]);
+  useEffect(
+    () =>
+      subscribeWorld(() => {
+        if (world.opacity > 0.01) invalidate();
+      }),
+    [invalidate],
+  );
   useFrame(({ camera, gl }) => {
     if (!group.current) return;
     group.current.rotation.set(
-      world.tilt,
-      world.rotation,
+      world.tilt + world.pointerY * 0.09,
+      world.rotation + world.pointerX * 0.15,
       -0.25 + world.assembly * 0.15,
     );
     group.current.position.set(
@@ -33,7 +39,7 @@ function ScrollSculpture() {
     const size = viewport.width < 5 ? 0.62 : 1;
     group.current.scale.setScalar(size);
     camera.position.z = 8.8 - world.zoom * 1.7;
-    camera.position.x = Math.sin(world.rotation) * 0.28;
+    camera.position.x = Math.sin(world.rotation) * 0.28 + world.pointerX * 0.15;
     camera.lookAt(0, 0, 0);
     gl.domElement.dataset.cameraZ = camera.position.z.toFixed(3);
     gl.domElement.dataset.spread = world.spread.toFixed(3);
@@ -67,22 +73,22 @@ function ScrollSculpture() {
         ref={light}
         position={[4, 3, 4]}
         intensity={25}
-        color="#dcc9a3"
+        color="#FFFFFF"
       />
-      <pointLight position={[-4, -2, 3]} intensity={9} color="#dce2e7" />
+      <pointLight position={[-4, -2, 3]} intensity={9} color="#8B60FF" />
       <Environment resolution={64} frames={1}>
         <Lightformer
           intensity={3}
           position={[-4, 2, 3]}
           scale={[2, 7, 1]}
-          color="#f4ede1"
+          color="#FFFFFF"
         />
         <Lightformer
           intensity={4}
           position={[4, 2, 0]}
           rotation={[0, -Math.PI / 2, 0]}
           scale={[2, 6, 1]}
-          color="#cfbea1"
+          color="#FFFFFF"
         />
         <Lightformer
           intensity={2}
@@ -102,9 +108,9 @@ function ScrollSculpture() {
           >
             <torusGeometry args={[1.5, 0.16, 12, 72, Math.PI * 2]} />
             <meshStandardMaterial
-              color={i % 2 ? "#928a79" : "#b5b4ac"}
+              color={i % 2 ? "#C8CDD5" : "#F5F2EA"}
               metalness={1}
-              roughness={0.27}
+              roughness={0.16}
             />
           </mesh>
         ))}
@@ -115,7 +121,7 @@ function ScrollSculpture() {
         </bufferGeometry>
         <pointsMaterial
           size={0.012}
-          color="#cbbb9e"
+          color="#FFFFFF"
           transparent
           opacity={0.45}
           depthWrite={false}
